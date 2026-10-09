@@ -1,24 +1,45 @@
 <!doctype html><html lang="pt-PT"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Dynatrace Watch</title>
-<link rel="apple-touch-icon" href="watch-180.png"><link rel="icon" href="watch-180.png">
+<link rel="apple-touch-icon" href="watch-180.png"><link rel="icon" href="watch-192.png" sizes="192x192">
 <meta name="apple-mobile-web-app-title" content="Dynatrace Watch"><meta name="theme-color" content="#0b0e14">
 <style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0e14;color:#e9edf5;
 font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box}
-img{width:96px;height:96px;border-radius:22px}h1{font-size:20px;margin:14px 0 6px}p{margin:6px 0;color:#aab3c5}b{color:#e9edf5}</style></head>
-<body><main><img src="watch-180.png" alt=""><h1>Dynatrace Watch</h1><div id="m"><p>A abrir…</p></div></main>
+img{width:96px;height:96px;border-radius:22px}h1{font-size:20px;margin:14px 0 6px}p{margin:6px 0;color:#aab3c5}b{color:#e9edf5}
+button{margin-top:14px;padding:11px 22px;border:0;border-radius:12px;background:#2f6bff;color:#fff;font-family:inherit;font-size:17px;font-weight:600;cursor:pointer}</style></head>
+<body><main><img src="watch-180.png" alt=""><h1>Dynatrace Watch</h1><div id="m"><p>A abrir o painel…</p></div></main>
 <script>
-// Lançador do painel para o ecrã principal do iPhone. O endereço do painel e a chave vêm depois do # (nunca chegam a
-// este servidor) e ficam só no atalho do iPhone. Esta página não guarda nem envia nada.
+// Endereço curto do painel do Dynatrace Watch: esta página abre sempre o painel (Apps Script, só contas da empresa).
+// A chave do painel nunca está aqui nem no GitHub. Chega depois do # quando se carrega em 📲 no painel (o browser
+// não envia o # a nenhum servidor) e fica só neste telemóvel: no ícone do ecrã principal e no armazenamento local.
 (function(){
-  var m=document.getElementById('m'),h=new URLSearchParams(location.hash.slice(1)),u=h.get('u')||'',k=h.get('k')||'';
-  var ok=/^https:\/\/script\.google\.com\/[\w\/.-]+\/exec$/.test(u)&&/^[\w-]{8,128}$/.test(k);
-  if(!ok){m.innerHTML='<p>Abre o painel no iPhone e carrega em <b>📲 Pôr no ecrã principal</b>.</p>';return;}
-  if(/[?&]add\b/.test(location.search)){
+  var PANEL='https://script.google.com/a/macros/cross-join.com/s/AKfycbyyYdR1GgTpbUYszMhMGgEaZEH-a4qQPEctSpNhFplp-v2qFgSXAwlBJ0fIfYNSNm02BQ/exec';
+  var m=document.getElementById('m'),h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search);
+  var okU=function(u){return /^https:\/\/script\.google\.com\/[\w\/.-]+\/exec$/.test(u);},okK=function(k){return /^[\w-]{8,128}$/.test(k);};
+  var u=okU(h.get('u')||'')?h.get('u'):PANEL,k=h.get('k')||'',saved='',p=q.get('p')||'';
+  try{saved=localStorage.getItem('watch-k')||'';}catch(e){}
+  if(okK(k)){if(k!==saved){try{localStorage.setItem('watch-k',k);}catch(e){}}}else k=okK(saved)?saved:'';
+  var ua=navigator.userAgent||'',ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),app=false;
+  try{app=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;}catch(e){}
+  // O Android instala a app pelo manifest. O iPhone fica sem ele: guarda o endereço com o # tal como está.
+  if(!ios){var l=document.createElement('link');l.rel='manifest';l.href='manifest.webmanifest';document.head.appendChild(l);}
+  if(q.has('add')){
     history.replaceState(null,'',location.pathname+location.hash);
-    m.innerHTML='<p>Agora: <b>Partilhar → Adicionar ao ecrã principal</b> (deixa <b>Abrir como app web</b> ligado) → <b>Adicionar</b>.</p>';
+    if(ios){m.innerHTML='<p>Agora: <b>Partilhar → Adicionar ao ecrã principal</b> (deixa <b>Abrir como app web</b> ligado) → <b>Adicionar</b>.</p>';return;}
+    m.innerHTML='<p>No Chrome: <b>⋮ → Adicionar ao ecrã principal → Instalar</b>.</p>';
+    try{navigator.serviceWorker.register('sw.js');}catch(e){}
+    window.addEventListener('beforeinstallprompt',function(e){
+      e.preventDefault();var b=document.createElement('button');b.textContent='Instalar';
+      b.onclick=function(){e.prompt();};m.innerHTML='<p>Instala o painel como app neste telemóvel.</p>';m.appendChild(b);
+    });
+    window.addEventListener('appinstalled',function(){m.innerHTML='<p>Instalado. Abre-o pelo ícone <b>Watch</b>.</p>';});
     return;
   }
-  location.replace(u+'?k='+encodeURIComponent(k));
+  if(ios&&app&&!k){
+    m.innerHTML='<p>Este ícone foi criado sem a chave do painel.</p><p>Apaga-o e cria-o de novo a partir do painel: abre um alerta no <b>Safari</b> → <b>📲</b> → <b>Partilhar → Adicionar ao ecrã principal</b>.</p>';
+    return;
+  }
+  var a=[];if(k)a.push('k='+encodeURIComponent(k));if(/^P-\d{4,12}$/.test(p))a.push('p='+p);
+  location.replace(u+(a.length?'?'+a.join('&'):''));
 })();
 </script></body></html>
