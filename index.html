@@ -15,6 +15,7 @@ button{margin-top:14px;padding:11px 22px;border:0;border-radius:12px;background:
 // A chave do painel nunca está aqui nem no GitHub. Chega depois do # quando se carrega em 📲 no painel (o browser
 // não envia o # a nenhum servidor) e fica só neste telemóvel: no ícone do ecrã principal e no armazenamento local.
 // O logo vai dentro da página: no iPhone, o pedido da imagem era cancelado ao sair para o painel (ficava um "?").
+// Desde a v4.49.7 o painel abre para qualquer conta da empresa sem a chave: sem ela, abre na mesma.
 (function(){
   var PANEL='https://script.google.com/a/macros/cross-join.com/s/AKfycbyyYdR1GgTpbUYszMhMGgEaZEH-a4qQPEctSpNhFplp-v2qFgSXAwlBJ0fIfYNSNm02BQ/exec';
   var m=document.getElementById('m'),h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search);
@@ -29,17 +30,13 @@ button{margin-top:14px;padding:11px 22px;border:0;border-radius:12px;background:
   if(q.has('add')){
     history.replaceState(null,'',location.pathname+location.hash);
     if(ios){m.innerHTML='<p>Agora: <b>Partilhar → Adicionar ao ecrã principal</b> (deixa <b>Abrir como app web</b> ligado) → <b>Adicionar</b>.</p>';return;}
-    m.innerHTML='<p>No Chrome: <b>⋮ → Adicionar ao ecrã principal → Instalar</b>.</p>';
+    m.innerHTML='<p>No menu do browser (Chrome, Brave): <b>⋮ → Adicionar ao ecrã principal → Instalar</b>.</p>';
     try{navigator.serviceWorker.register('sw.js');}catch(e){}
     window.addEventListener('beforeinstallprompt',function(e){
       e.preventDefault();var b=document.createElement('button');b.textContent='Instalar';
       b.onclick=function(){e.prompt();};m.innerHTML='<p>Instala o painel como app neste telemóvel.</p>';m.appendChild(b);
     });
     window.addEventListener('appinstalled',function(){m.innerHTML='<p>Instalado. Abre-o pelo ícone <b>Watch</b>.</p>';});
-    return;
-  }
-  if(ios&&app&&!k){
-    m.innerHTML='<p>Este ícone foi criado sem a chave do painel.</p><p>Apaga-o e cria-o de novo a partir do painel: abre um alerta no <b>Safari</b> → <b>📲</b> → <b>Partilhar → Adicionar ao ecrã principal</b>.</p>';
     return;
   }
   var a=[];if(k)a.push('k='+encodeURIComponent(k));if(/^P-\d{4,12}$/.test(p))a.push('p='+p);
